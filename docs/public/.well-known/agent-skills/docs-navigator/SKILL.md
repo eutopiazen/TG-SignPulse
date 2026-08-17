@@ -13,7 +13,7 @@ description: 根据主题定位 TG-SignPulse 官方文档页面。在用户询�
 
 - 站点：https://tg.cosr.eu.org
 - 索引：https://tg.cosr.eu.org/llms.txt
-- 源码：https://github.com/Silentely/TG-SignPulse
+- 源码：https://github.com/eutopiazen/TG-SignPulse
 
 ## 主题路由
 

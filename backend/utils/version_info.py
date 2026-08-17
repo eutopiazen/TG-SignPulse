@@ -32,10 +32,10 @@ from backend.utils.time import utc_now_iso
 logger = logging.getLogger("backend.version_info")
 
 DEFAULT_UPDATE_CHECK_URL = (
-    "https://api.github.com/repos/Silentely/TG-SignPulse/releases/latest"
+    "https://api.github.com/repos/eutopiazen/TG-SignPulse/releases/latest"
 )
 DEFAULT_GITHUB_HTML_LATEST = (
-    "https://github.com/Silentely/TG-SignPulse/releases/latest"
+    "https://github.com/eutopiazen/TG-SignPulse/releases/latest"
 )
 UPDATE_CACHE_TTL_SECONDS = 6 * 3600
 _HTTP_TIMEOUT_SECONDS = 8.0

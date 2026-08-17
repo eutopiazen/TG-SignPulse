@@ -32,7 +32,7 @@ docker run -d \
   -e TZ=Asia/Shanghai \
   -e APP_SECRET_KEY=$(openssl rand -base64 32) \
   -e ADMIN_PASSWORD=your_strong_password \
-  ghcr.io/silentely/tg-signpulse:latest
+  ghcr.io/eutopiazen/tg-signpulse:latest
 ```
 
 ### Docker Compose（推荐）
@@ -40,7 +40,7 @@ docker run -d \
 ```yaml
 services:
   app:
-    image: ghcr.io/silentely/tg-signpulse:latest
+    image: ghcr.io/eutopiazen/tg-signpulse:latest
     container_name: tg-signpulse
     restart: unless-stopped
     ports:

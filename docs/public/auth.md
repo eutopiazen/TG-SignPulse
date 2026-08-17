@@ -87,5 +87,5 @@ Authorization: Bearer <jwt>
 
 ## 联系与源码
 
-- GitHub: https://github.com/Silentely/TG-SignPulse
+- GitHub: https://github.com/eutopiazen/TG-SignPulse
 - 文档: https://tg.cosr.eu.org/

@@ -4,7 +4,7 @@ version: "3.9"
 services:
   app:
     build: .
-    image: ghcr.io/silentely/tg-signpulse:latest
+    image: ghcr.io/eutopiazen/tg-signpulse:main
     container_name: tg-signer-panel
     environment:
       - APP_HOST=0.0.0.0

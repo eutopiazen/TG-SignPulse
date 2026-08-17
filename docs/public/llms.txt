@@ -3,7 +3,7 @@
 > Telegram 多账号自动化管理面板：签到、消息编排、关键词监听与 AI 验证。
 
 文档站：https://tg.cosr.eu.org
-源码：https://github.com/Silentely/TG-SignPulse
+源码：https://github.com/eutopiazen/TG-SignPulse
 版本：2.2.3
 
 ## 产品摘要

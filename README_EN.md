@@ -10,10 +10,10 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/Silentely/TG-SignPulse/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-BSD--3--Clause-green" alt="License"></a>
+  <a href="https://github.com/eutopiazen/TG-SignPulse/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-BSD--3--Clause-green" alt="License"></a>
   <img src="https://img.shields.io/badge/python-3.10--3.13-blue" alt="Python">
   <img src="https://img.shields.io/badge/node-22+-green" alt="Node.js">
-  <a href="https://github.com/Silentely/TG-SignPulse/pkgs/container/tg-signpulse"><img src="https://img.shields.io/badge/ghcr.io-available-purple" alt="GHCR"></a>
+  <a href="https://github.com/eutopiazen/TG-SignPulse/pkgs/container/tg-signpulse"><img src="https://img.shields.io/badge/ghcr.io-available-purple" alt="GHCR"></a>
   <a href="https://tg.cosr.eu.org/"><img src="https://img.shields.io/badge/docs-online-229ED9" alt="Docs"></a>
 </p>
 
@@ -94,7 +94,7 @@ docker run -d \
   -e TZ=Asia/Shanghai \
   -e APP_SECRET_KEY=$(openssl rand -base64 32) \
   -e ADMIN_PASSWORD=your_strong_password \
-  ghcr.io/silentely/tg-signpulse:latest
+  ghcr.io/eutopiazen/tg-signpulse:latest
 ```
 
 ### Docker Compose
@@ -102,7 +102,7 @@ docker run -d \
 ```yaml
 services:
   app:
-    image: ghcr.io/silentely/tg-signpulse:latest
+    image: ghcr.io/eutopiazen/tg-signpulse:latest
     container_name: tg-signpulse
     restart: unless-stopped
     ports:
