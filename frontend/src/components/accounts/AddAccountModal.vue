@@ -59,6 +59,8 @@ const qrImage = ref('')
 const loginId = ref('')
 /** 二维码加载失败/已过期：清空图片后展示错误占位与重新获取入口 */
 const qrLoadFailed = ref(false)
+/** 已扫码待确认：给用户"请在手机上确认"的明确反馈，避免误以为卡住 */
+const scannedWaitConfirm = ref(false)
 let pollHandle: ChainPollHandle | null = null
 
 const handleQrImageError = () => {
@@ -85,6 +87,7 @@ const reset = async () => {
   codeCountdown.value = 0
   qrImage.value = ''
   qrLoadFailed.value = false
+  scannedWaitConfirm.value = false
   loginId.value = ''
   loading.value = false
 }
@@ -133,6 +136,7 @@ const pollStatus = async (token: string, lid: string) => {
   try {
     const res = await getQrLoginStatus(token, lid)
     if (res.status === 'success') {
+      scannedWaitConfirm.value = false
       pollHandle?.stop()
       pollHandle = null
       await saveRemarkIfPresent(token)
@@ -141,6 +145,7 @@ const pollStatus = async (token: string, lid: string) => {
       emit('success')
       handleClose()
     } else if (res.status === 'waiting_for_password' || res.status === 'password_required') {
+      scannedWaitConfirm.value = false
       // 如果已经填了密码，自动提交
       if (form.value.password) {
         pollHandle?.stop()
@@ -152,7 +157,12 @@ const pollStatus = async (token: string, lid: string) => {
         pollHandle = null
         loading.value = false
       }
+    } else if (res.status === 'scanned_wait_confirm') {
+      // 已扫码待手机确认：给用户明确反馈，继续轮询，不要打断
+      scannedWaitConfirm.value = true
+      error.value = ''
     } else if (res.status === 'failed' || res.status === 'expired') {
+      scannedWaitConfirm.value = false
       pollHandle?.stop()
       pollHandle = null
       // 二维码已失效：清空图片避免用户继续扫描无意义的旧码
@@ -209,6 +219,7 @@ const handleGetQr = async () => {
     loginId.value = res.login_id
     qrImage.value = res.qr_image || ''
     qrLoadFailed.value = false
+    scannedWaitConfirm.value = false
     
     pollHandle?.stop()
     pollHandle = startChainPoll(() => pollStatus(token, res.login_id), { intervalMs: 3000 })
@@ -303,12 +314,14 @@ const handleSave = async () => {
     if (form.value.password) {
       await handleQrPasswordSubmit(token, loginId.value)
     } else {
-      // 没有密码时，检查当前轮询是否还在运行
-      // 如果轮询在运行，说明还在等待后端确认，不需要用户操作
-      pollHandle?.stop()
-      pollHandle = null
-      error.value = t('addAccount.enterPasswordOrWait')
+      // 没有密码时：如果轮询仍在运行（等待手机确认），不要停止轮询，
+      // 只提示用户在手机端确认；停止轮询会导致登录流程中断。
       loading.value = false
+      if (pollHandle) {
+        error.value = t('addAccount.scannedWaitConfirm')
+      } else {
+        error.value = t('addAccount.enterPasswordOrWait')
+      }
     }
   }
 }
@@ -443,7 +456,7 @@ onUnmounted(() => {
           </button>
         </div>
         <div class="flex justify-center items-center h-48 w-full bg-white dark:bg-gray-900 rounded-md border border-gray-200 dark:border-gray-700">
-          <img v-if="qrImage" :src="qrImage" class="w-40 h-40" alt="" @error="handleQrImageError" />
+          <img v-if="qrImage" :src="qrImage" class="w-40 h-40" :class="scannedWaitConfirm ? 'opacity-50' : ''" alt="" @error="handleQrImageError" />
           <div v-else class="flex flex-col items-center gap-2">
             <span class="text-sm text-gray-400">{{ qrLoadFailed ? t('addAccount.qrLoadFailed') : t('addAccount.qrArea') }}</span>
             <button
@@ -456,6 +469,10 @@ onUnmounted(() => {
               {{ t('addAccount.retry') }}
             </button>
           </div>
+        </div>
+        <div v-if="scannedWaitConfirm" class="flex items-center justify-center gap-2 mt-2 text-sm text-sky-600 dark:text-sky-400">
+          <span class="inline-block w-2 h-2 rounded-full bg-sky-500 animate-pulse"></span>
+          {{ t('addAccount.scannedWaitConfirm') }}
         </div>
       </div>
     </div>

@@ -684,6 +684,7 @@
     "proxy": "SOCKS5 Proxy (optional)",
     "proxyPlaceholder": "socks5://ip:port or socks5://user:pass{'@'}ip:port",
     "qrHint": "Open Telegram and scan the QR code to login",
+    "scannedWaitConfirm": "Scanned. Please confirm login on your phone",
     "getQr": "Get QR Code",
     "qrArea": "QR code area",
     "cancel": "Cancel",

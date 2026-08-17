@@ -224,6 +224,13 @@ class TelegramQrLoginMixin:
         except SessionPasswordNeeded:
             raise
         except Exception as exc:
+            # 记录被吞掉的异常，便于排查 ImportLoginToken 失败的真实原因
+            # （此前静默吞掉会导致 get_qr_login_status 拿不到任何错误信息，
+            # 进而回退到错误的 ExportLoginToken 兜底路径）
+            logger.warning(
+                "QR ImportLoginToken 异常 (migrate_dc_id=%s): %s",
+                migrate_dc_id, exc, exc_info=True,
+            )
             error = exc
         return result, error
 
@@ -263,7 +270,8 @@ class TelegramQrLoginMixin:
                     api_id=api_id, api_hash=api_hash, except_ids=[]
                 )
             )
-        except Exception:
+        except Exception as exc:
+            logger.warning("QR ExportLoginToken 异常: %s", exc, exc_info=True)
             return None
 
         if isinstance(export_result, raw.types.auth.LoginTokenSuccess):
@@ -280,7 +288,11 @@ class TelegramQrLoginMixin:
             except SessionPasswordNeeded:
                 self._set_qr_password_required(data, None)
                 return _PASSWORD_REQUIRED
-            except Exception:
+            except Exception as exc:
+                logger.warning(
+                    "QR ExportLoginToken 迁移后 ImportLoginToken 异常 (dc=%s): %s",
+                    export_result.dc_id, exc, exc_info=True,
+                )
                 return None
             if isinstance(migrate_result, raw.types.auth.LoginTokenSuccess):
                 return migrate_result
@@ -764,24 +776,13 @@ class TelegramQrLoginMixin:
                 if isinstance(result, raw.types.auth.LoginToken):
                     self._apply_login_token_update(data, result)
                     data["status"] = "scanned_wait_confirm"
-
-                # fallback: 再次调用 ExportLoginToken 获取最终状态（符合官方流程）
-                last_export_ts = data.get("last_export_ts", 0)
-                if (
-                    result is None or isinstance(result, raw.types.auth.LoginToken)
-                ) and now - last_export_ts >= 3:
-                    data["last_export_ts"] = now
-                    try:
-                        outcome = await self._export_login_token(client, data)
-                        if outcome is _PASSWORD_REQUIRED:
-                            self._log_qr_state(login_id, "password_required", data)
-                            return self._password_required_response(data)
-                        if isinstance(outcome, raw.types.auth.LoginTokenSuccess):
-                            return await self._finalize_qr_login(
-                                client, data, login_id, outcome
-                            )
-                    except Exception:
-                        pass
+                # 注意：此处不应再调用 ExportLoginToken 作为 fallback。
+                # ExportLoginToken 会生成新的登录 token，导致用户手机端已扫码的
+                # 确认流程失效（旧 token 作废），并且每次轮询都会触发 DC 迁移、
+                # 反复创建新 auth key（日志表现为反复出现 "Start creating a new
+                # auth key on DC5"），最终登录永远无法完成。
+                # 已扫码确认阶段只应使用 ImportLoginToken 轮询，等待用户在手机端
+                # 点确认后服务端返回 LoginTokenSuccess。
 
             status = (
                 "scanned_wait_confirm"
